@@ -132,3 +132,7 @@ class ExpressionRecognition:
             results += score   
         predicted = ExpressionRecognition.prediction_from_score(results)
         return results, predicted
+
+class AudioEmotion:
+    def __init__(self):
+        pass

@@ -2,6 +2,13 @@ from abc import ABC, abstractmethod
 import os
 from PIL import Image
 import cv2
+from moviepy.editor import *
+from scipy.io import wavfile
+import pyloudnorm
+import librosa
+import numpy as np
+import io
+import matplotlib.pyplot as plt
 
 class DataProvider(ABC):
     @abstractmethod
@@ -72,4 +79,72 @@ class VideoProvider(DataProvider):
 
     def finished(self):
         return self.done
+
+class AudioSpectrogramProvider(DataProvider):
+    def __init__(self, video_rel_path, skip_secs=1.0):
+        videoclip = VideoFileClip(video_rel_path)
+        audioclip = videoclip.audio
+        audioclip.write_audiofile(video_rel_path[:-4] + '.wav')
+        audioclip.close()
+        videoclip.close()
+        sample_rate, sample = wavfile.read(video_rel_path[:-4] + '.wav')
+        if len(sample.shape) == 2: # stereo to mono
+            sample = (sample[:, 0] + sample[:, 1]) / 2
+        self.sample_rate = sample_rate
+        self.sample = sample
+        self.skip_frames = int(sample_rate * skip_secs)
+        self.current_frame = 0
+        self.current_img = None
+        self.done = False
+
+    def next_step(self):
+        current_sample_end = self.current_frame + self.skip_frames
+        if current_sample_end > len(self.sample):
+            self.done = True
+        else:
+            current_sample = self.sample[self.current_frame:current_sample_end]
+            self.current_img = self.sound_to_spectrogram(self.sample_rate, current_sample)
+            self.current_frame += self.skip_frames
+
+    def next_img(self):
+            self.next_step()
+            if not self.finished():
+                return self.current_img
+
+    def finished(self):
+        return self.done
+
+    def audio_loudness(self, audio, samplerate):
+        meter = pyloudnorm.Meter(samplerate)
+        loudness = meter.integrated_loudness(audio)
+        return loudness
+
+    def normalize_audio(self, audio, samplerate, new_loudness=-23.0):
+        loudness = audio_loudness(audio, samplerate)
+        normalized_audio = pyloudnorm.normalize.loudness(audio, loudness, new_loudness)
+        return normalized_audio
+
+    def sound_to_spectrogram(self, sample_rate, sample):
+        spectrogram = librosa.feature.melspectrogram(y=sample.astype(float), 
+                                                    sr=sample_rate, 
+                                                    win_length=400,
+                                                    hop_length=len(sample)//256,
+                                                    n_mels=259,
+                                                    n_fft=6000,
+                                                    fmin=20, 
+                                                    fmax=2e4)
+        spectrogram_db = librosa.power_to_db(spectrogram, ref=np.max)
+        plt.axis('off')
+        plt.axes([0., 0., 1., 1.], frameon=False, xticks=[], yticks=[])
+        ret = librosa.display.specshow(spectrogram_db, x_axis='time',
+                                y_axis='mel', sr=sample_rate, cmap='jet', vmin=-116, vmax=10)
+        buf = io.BytesIO()
+        plt.savefig(buf, pad_inches=0)
+        buf.seek(0)
+        img = Image.open(buf)
+        buf.close()
+        plt.clf()
+        plt.cla()
+        return img
+
         

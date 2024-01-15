@@ -24,7 +24,10 @@ class Main:
         return img_tensor, results, predicted, dets
 
     def show_result(self, img_tensor, results, predicted, dets):
-        self.imaging.show_image_boxes(img_tensor, dets, f"Emotion of the crowd: {self.expression_recognition.class_names[int(ExpressionRecognition.prediction_from_score(results).numpy())]}")
+        self.imaging.show_image_boxes(
+            img_tensor, dets, 
+            "Emotion of the crowd: " + 
+            str(self.expression_recognition.class_names[int(ExpressionRecognition.prediction_from_score(results).numpy())]))
 
     def main(self):
         while not self.provider.finished():
