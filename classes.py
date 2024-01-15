@@ -64,7 +64,7 @@ class FaceRecognition:
 
 class SuperResolution:
     def __init__(self):
-        sys.path.append('C:\\Users\\Kalami\\CA\\PutTogether\\SuperResolution\\model')
+        sys.path.append(os.path.join('SuperResolution', 'model'))
         self.model = torch.load(os.path.join(os.getcwd(), "SuperResolution", "weights.pth"), map_location=lambda storage, loc: storage)
 
     def get_output(self, faces):
