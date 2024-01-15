@@ -39,10 +39,10 @@ class Main:
                 temp_file.write(binary_data_array)
             try:
                 subprocess.run(['python', 
-                os.path.join('AudioEmotion', 'spectrogram_image.py'),
-                '--sample_rate', 
-                str(self.audio_spectrogram_provider.sample_rate)],
-                check=True
+                    os.path.join('AudioEmotion', 'spectrogram_image.py'),
+                    '--sample_rate', 
+                    str(self.audio_spectrogram_provider.sample_rate)],
+                    check=True
                 )
             except subprocess.CalledProcessError as e:
                 print(f"Script execution failed with return code {e.returncode}")
