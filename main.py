@@ -35,11 +35,15 @@ class Main:
         while not self.video_provider.finished() and not self.audio_spectrogram_provider.finished():
             spectrogram_db = self.audio_spectrogram_provider.next_img()
             json_array = json.dumps(spectrogram_db.tolist())
-            with open('spectrogram_db.json', 'w') as temp_file:
+            with open(os.path.join('AudioEmotion', 'spectrogram_db.json'), 'w') as temp_file:
                 temp_file.write(json_array)
             try:
-                subprocess.run(['python', 'spectrogram_image.py', '--sample_rate', str(self.audio_spectrogram_provider.sample_rate)],
-                    check=True)
+                subprocess.run(['python', 
+                os.path.join('AudioEmotion', 'spectrogram_image.py'),
+                '--sample_rate', 
+                str(self.audio_spectrogram_provider.sample_rate)],
+                check=True
+                )
             except subprocess.CalledProcessError as e:
                 print(f"Script execution failed with return code {e.returncode}")
                 print(f"Error output:\n{e.output}")                               
