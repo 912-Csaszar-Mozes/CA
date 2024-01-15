@@ -40,7 +40,6 @@ class Main:
             try:
                 subprocess.run(['python', 'spectrogram_image.py', '--sample_rate', str(self.audio_spectrogram_provider.sample_rate)],
                     check=True)
-                print("Script execution successful.")
             except subprocess.CalledProcessError as e:
                 print(f"Script execution failed with return code {e.returncode}")
                 print(f"Error output:\n{e.output}")                               

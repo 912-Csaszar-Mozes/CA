@@ -68,8 +68,8 @@ class SuperResolution:
         self.model = torch.load(os.path.join(os.getcwd(), "SuperResolution", "weights.pth"), map_location=lambda storage, loc: storage)
 
     def get_output(self, faces):
-        for face in faces:
-            print(face.shape)
+        #for face in faces:
+            #print(face.shape)
         return [self.model(face.unsqueeze(0)).squeeze() if (face.shape[1] < 48 or face.shape[2] < 48) else face for face in faces]
 
 class ExpressionRecognition:
