@@ -30,7 +30,7 @@ class Main:
         while not self.provider.finished():
             self.show_result(*self.get_result(self.provider.next_img()))
 
-dp = VideoProvider('test_data/Audience2.mp4')
+dp = VideoProvider('test_data/DenmarkVsEnglandTrimmed.mp4')
 Main(dp)
 
 
