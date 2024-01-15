@@ -7,7 +7,6 @@ from scipy.io import wavfile
 import pyloudnorm
 import librosa
 import numpy as np
-import io
 import matplotlib.pyplot as plt
 
 class DataProvider(ABC):
@@ -134,17 +133,6 @@ class AudioSpectrogramProvider(DataProvider):
                                                     fmin=20, 
                                                     fmax=2e4)
         spectrogram_db = librosa.power_to_db(spectrogram, ref=np.max)
-        plt.axis('off')
-        plt.axes([0., 0., 1., 1.], frameon=False, xticks=[], yticks=[])
-        ret = librosa.display.specshow(spectrogram_db, x_axis='time',
-                                y_axis='mel', sr=sample_rate, cmap='jet', vmin=-116, vmax=10)
-        buf = io.BytesIO()
-        plt.savefig(buf, pad_inches=0)
-        buf.seek(0)
-        img = Image.open(buf)
-        buf.close()
-        plt.clf()
-        plt.cla()
-        return img
+        return spectrogram_db
 
         
