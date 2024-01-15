@@ -2,7 +2,7 @@ from classes import *
 from data_providers import *
 import time
 import cv2
-import json
+import pickle
 import subprocess
 
 class Main:
@@ -34,9 +34,9 @@ class Main:
     def main(self):
         while not self.video_provider.finished() and not self.audio_spectrogram_provider.finished():
             spectrogram_db = self.audio_spectrogram_provider.next_img()
-            json_array = json.dumps(spectrogram_db.tolist())
-            with open(os.path.join('AudioEmotion', 'spectrogram_db.json'), 'w') as temp_file:
-                temp_file.write(json_array)
+            binary_data_array = pickle.dumps(spectrogram_db)
+            with open(os.path.join('AudioEmotion', 'spectrogram_db.pkl'), 'wb') as temp_file:
+                temp_file.write(binary_data_array)
             try:
                 subprocess.run(['python', 
                 os.path.join('AudioEmotion', 'spectrogram_image.py'),

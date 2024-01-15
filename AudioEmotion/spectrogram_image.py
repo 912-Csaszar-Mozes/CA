@@ -1,5 +1,5 @@
 import argparse
-import json
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa
@@ -12,9 +12,9 @@ args = parser.parse_args()
 sample_rate = args.sample_rate
 
 spectrogram_db = []
-with open(os.path.join('AudioEmotion', 'spectrogram_db.json'), 'r') as file:
-    json_array = file.read()
-    spectrogram_db = np.array(json.loads(json_array))
+with open(os.path.join('AudioEmotion', 'spectrogram_db.pkl'), 'rb') as file:
+    binary_data_array = file.read()
+    spectrogram_db = pickle.loads(binary_data_array)
 
 plt.axis('off')
 plt.axes([0., 0., 1., 1.], frameon=False, xticks=[], yticks=[])
