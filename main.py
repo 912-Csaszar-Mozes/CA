@@ -24,6 +24,21 @@ class Main:
             faces = self.super_resolution.get_output(faces)
             results, predicted = self.expression_recognition.get_output(faces)
         return img_tensor, results, predicted, dets
+    
+    def get_audio_results(self, spectrogram_db):
+        binary_data_array = pickle.dumps(spectrogram_db)
+        with open(os.path.join('AudioEmotion', 'spectrogram_db.pkl'), 'wb') as temp_file:
+            temp_file.write(binary_data_array)
+        try:
+            subprocess.run(['python', 
+                os.path.join('AudioEmotion', 'spectrogram_image.py'),
+                '--sample_rate', 
+                str(self.audio_spectrogram_provider.sample_rate)],
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Script execution failed with return code {e.returncode}")
+            print(f"Error output:\n{e.output}")  
 
     def show_results(self, img_tensor, results, predicted, dets):
         self.imaging.show_image_boxes(
@@ -33,21 +48,7 @@ class Main:
 
     def main(self):
         while not self.video_provider.finished() and not self.audio_spectrogram_provider.finished():
-            spectrogram_db = self.audio_spectrogram_provider.next_img()
-            binary_data_array = pickle.dumps(spectrogram_db)
-            with open(os.path.join('AudioEmotion', 'spectrogram_db.pkl'), 'wb') as temp_file:
-                temp_file.write(binary_data_array)
-            try:
-                subprocess.run(['python', 
-                    os.path.join('AudioEmotion', 'spectrogram_image.py'),
-                    '--sample_rate', 
-                    str(self.audio_spectrogram_provider.sample_rate)],
-                    check=True
-                )
-            except subprocess.CalledProcessError as e:
-                print(f"Script execution failed with return code {e.returncode}")
-                print(f"Error output:\n{e.output}")                               
-
+            self.get_audio_results(self.audio_spectrogram_provider.next_img())
             self.show_results(*self.get_facial_results(self.video_provider.next_img()))
 
 Main('test_data/DenmarkVsEnglandTrimmed.mp4')
