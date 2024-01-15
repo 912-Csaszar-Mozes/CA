@@ -1,8 +1,5 @@
-import os
-from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import matplotlib.gridspec as gridspec
 
 class Imaging:
     def __init__(self):

@@ -4,12 +4,13 @@ import torchvision.transforms as transforms
 from skimage.transform import resize
 import numpy as np
 from PIL import Image
+from AudioEmotion.yolov5 import Yolov5SpectrogramEmotion
 
 from FaceRecognition.model.model import DetectionModel
 from FaceRecognition import trainer
 from ExpressionRecognition.models import VGG
 
-from utils import *
+from utilities import *
 
 import sys
 import os
@@ -135,4 +136,7 @@ class ExpressionRecognition:
 
 class AudioEmotion:
     def __init__(self):
-        pass
+        self.yolov5 = Yolov5SpectrogramEmotion()
+
+    def get_result(self):
+        return self.yolov5.evaluate(os.path.join('AudioEmotion', 'spectrogram.jpg'))

@@ -1,7 +1,6 @@
 from classes import * 
 from data_providers import *
 import time
-import cv2
 import pickle
 import subprocess
 
@@ -10,6 +9,7 @@ class Main:
         self.face_recognition = FaceRecognition()
         self.super_resolution = SuperResolution()
         self.expression_recognition = ExpressionRecognition()
+        self.audio_emotion = AudioEmotion()
         self.transform = transforms.ToTensor()
         self.imaging = Imaging()
         self.video_provider = VideoProvider(video_rel_path, skip_secs)
@@ -36,9 +36,11 @@ class Main:
                 str(self.audio_spectrogram_provider.sample_rate)],
                 check=True
             )
+            return self.audio_emotion.get_result()
         except subprocess.CalledProcessError as e:
             print(f"Script execution failed with return code {e.returncode}")
             print(f"Error output:\n{e.output}")  
+            return None
 
     def show_results(self, img_tensor, results, predicted, dets):
         self.imaging.show_image_boxes(
@@ -48,7 +50,8 @@ class Main:
 
     def main(self):
         while not self.video_provider.finished() and not self.audio_spectrogram_provider.finished():
-            self.get_audio_results(self.audio_spectrogram_provider.next_img())
+            audio_result = self.get_audio_results(self.audio_spectrogram_provider.next_img())
+            print(audio_result)
             self.show_results(*self.get_facial_results(self.video_provider.next_img()))
 
 Main('test_data/DenmarkVsEnglandTrimmed.mp4')

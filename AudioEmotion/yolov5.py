@@ -1,9 +1,13 @@
 import torch
 import cv2
+import os
+import matplotlib
 
 class Yolov5SpectrogramEmotion:
     def __init__(self):
-        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='weights.pt', force_reload=False)
+        current_backend = matplotlib.get_backend() # yolov5 hides matplotlib so we need to restore it...
+        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=os.path.join('AudioEmotion', 'weights.pt'), force_reload=False)
+        matplotlib.use(current_backend)
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         print(f"device: {device}")
         self.model = self.model.to(device)
