@@ -3,11 +3,14 @@ import cv2
 import os
 import matplotlib
 import pathlib
+import platform
 
 class Yolov5SpectrogramEmotion:
     def __init__(self):
-        temp = pathlib.PosixPath # Comment this if you are on Linux
-        pathlib.PosixPath = pathlib.WindowsPath #
+        if platform.system == 'Windows':
+            temp = pathlib.PosixPath
+            pathlib.PosixPath = pathlib.WindowsPath 
+
         current_backend = matplotlib.get_backend() # yolov5 hides matplotlib so we need to restore it...
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=os.path.join('AudioEmotion', 'weights.pt'), force_reload=True)
         matplotlib.use(current_backend)

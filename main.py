@@ -73,7 +73,7 @@ class Main:
                 self.audio_spectrogram_provider.play_audio_in_background()
                 sound_plays = True
 
-Main('test_data/DenmarkVsEnglandTrimmed.mp4')
+Main('test_data/bosnia_trimmed.mp4')
 
 
 time.sleep(2)
