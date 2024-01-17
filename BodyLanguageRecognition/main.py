@@ -1,22 +1,8 @@
 from ultralytics import YOLO
 import pandas as pd
 import os
-import numpy as np
 from catboost import CatBoostClassifier
-
-model = YOLO('yolov8m-pose.pt')
-
-script_directory = os.path.dirname(os.path.realpath(__file__))
-models_folder_path = os.path.join(script_directory, 'models\\')
-loaded_catboost_model = CatBoostClassifier()
-loaded_catboost_model.load_model(models_folder_path + 'body_emotion')
-
-movies = os.path.join(script_directory, 'BoLD_dataset_sample\\')
-
-group = "0163.mp4"
-guy_walk = "0040.mp4"
-kids_mom = "0025.mp4"
-results = model(source = movies + kids_mom, show=True, conf=0.3, save=False)
+import torch
 
 body_parts = {
     0: 'Nose',
@@ -45,30 +31,55 @@ common_body_parts = [
     'Right-shoulder', 'Right-elbow', 'Right-wrist',
     'Left-shoulder', 'Left-elbow', 'Left-wrist',
 ]
+
 common_body_parts = [f'{part}_x' for part in common_body_parts] + [f'{part}_y' for part in common_body_parts]
 
-df = pd.DataFrame(columns=common_body_parts)
-rows_to_append = []
+def process(image):
+    script_directory = os.path.dirname(os.path.realpath(__file__))
+    models_folder_path = os.path.join(script_directory, 'models\\')
+    loaded_catboost_model = CatBoostClassifier()
+    loaded_catboost_model.load_model(models_folder_path + 'body_emotion')
 
-for result in results:
-    row_data = {}
-    for idx, keypoint in enumerate(result.keypoints.xyn[0]):
-        body_part = body_parts.get(idx, f'Unknown-{idx}')
-        row_data[f'{body_part}_x'] = keypoint[0].item()
-        row_data[f'{body_part}_y'] = keypoint[1].item()
+    torch.cuda.set_device(0)
+    model = YOLO('yolov8m-pose.pt')
+    model.to('cuda')
 
-    rows_to_append.append(row_data)
+    results = model(source = image, show=False, conf=0.3, save=False)
 
-df = pd.DataFrame(rows_to_append)
+    df = pd.DataFrame(columns=common_body_parts)
 
-df = df.replace(0, np.nan)
-df = df.dropna(axis=0, how='all')
+    rows_to_append = []
 
-kept_df = df[common_body_parts]
-predictions = loaded_catboost_model.predict(data=kept_df)
+    for result in results:
+        row_data = {}
+        for idx, keypoint in enumerate(result.keypoints.xyn[0]):
+            body_part = body_parts.get(idx, f'Unknown-{idx}')
+            row_data[f'{body_part}_x'] = keypoint[0].item()
+            row_data[f'{body_part}_y'] = keypoint[1].item()
 
-unique_values = set(tuple(row) for row in predictions)
+        rows_to_append.append(row_data)
 
-for value in unique_values:
-    count = predictions.tolist().count(list(value))
-    print(f"Value: {value[0]}, Count: {count}")
+    df = pd.DataFrame(rows_to_append)
+
+    # df = df.replace(0, np.nan)
+    # df = df.dropna(axis=0, how='all')
+
+    kept_df = df[common_body_parts]
+    predictions = loaded_catboost_model.predict(data=kept_df)
+
+    unique_values = set(tuple(row) for row in predictions)
+
+    print("Body language emotion:")
+
+    for value in unique_values:
+        count = predictions.tolist().count(list(value))
+        print(f"Value: {value[0]}, Count: {count}")
+
+# movies = os.path.join(script_directory, 'BoLD_dataset_sample\\')
+#
+# group = "0163.mp4"
+# guy_walk = "0040.mp4"
+# kids_mom = "0025.mp4"
+
+
+
