@@ -36,9 +36,9 @@ common_body_parts = [f'{part}_x' for part in common_body_parts] + [f'{part}_y' f
 
 def process(image):
     script_directory = os.path.dirname(os.path.realpath(__file__))
-    models_folder_path = os.path.join(script_directory, 'models\\')
+    models_folder_path = os.path.join(script_directory, 'models')
     loaded_catboost_model = CatBoostClassifier()
-    loaded_catboost_model.load_model(models_folder_path + 'body_emotion')
+    loaded_catboost_model.load_model(os.path.join(models_folder_path, 'body_emotion'))
 
     torch.cuda.set_device(0)
     model = YOLO('yolov8m-pose.pt')

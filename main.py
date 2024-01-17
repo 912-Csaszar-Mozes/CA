@@ -57,14 +57,13 @@ class Main:
     def main(self):
         sound_plays = False
         while not self.video_provider.finished() and not self.audio_spectrogram_provider.finished():
-            # predicted_label, confidence = self.get_audio_results(self.audio_spectrogram_provider.next_img())
-            # if predicted_label == -1:
-            #     predicted_emotion = 'Unknown'
-            # else:
-            #     predicted_emotion = self.audio_emotion.class_names[predicted_label]
-            # confidence = int(confidence * 100) / 100.0
-            # self.show_results(*self.get_facial_results(self.video_provider.next_img()), predicted_emotion, confidence)
-            self.show_results(*self.get_facial_results(self.video_provider.next_img()), 'Unknown', 0.2)
+            predicted_label, confidence = self.get_audio_results(self.audio_spectrogram_provider.next_img())
+            if predicted_label == -1:
+                predicted_emotion = 'Unknown'
+            else:
+                predicted_emotion = self.audio_emotion.class_names[predicted_label]
+            confidence = int(confidence * 100) / 100.0
+            self.show_results(*self.get_facial_results(self.video_provider.next_img()), predicted_emotion, confidence)
             self.get_body_lang_results(self.video_provider.next_img())
             if sound_plays == False:
                 self.audio_spectrogram_provider.play_audio_in_background()
