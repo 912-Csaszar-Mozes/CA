@@ -6,7 +6,7 @@ from PIL import Image
 from torch.utils.data import dataset
 from torchvision import transforms
 
-from utils import visualize
+from utilities import visualize
 
 from .processor import DataProcessor
 

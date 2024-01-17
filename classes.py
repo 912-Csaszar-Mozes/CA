@@ -4,12 +4,13 @@ import torchvision.transforms as transforms
 from skimage.transform import resize
 import numpy as np
 from PIL import Image
+from AudioEmotion.yolov5 import Yolov5SpectrogramEmotion
 
 from FaceRecognition.model.model import DetectionModel
 from FaceRecognition import trainer
 from ExpressionRecognition.models import VGG
 
-from utils import *
+from utilities import *
 
 import sys
 import os
@@ -64,12 +65,12 @@ class FaceRecognition:
 
 class SuperResolution:
     def __init__(self):
-        sys.path.append('C:\\Users\\Kalami\\CA\\PutTogether\\SuperResolution\\model')
+        sys.path.append(os.path.join('SuperResolution', 'model'))
         self.model = torch.load(os.path.join(os.getcwd(), "SuperResolution", "weights.pth"), map_location=lambda storage, loc: storage)
 
     def get_output(self, faces):
-        for face in faces:
-            print(face.shape)
+        #for face in faces:
+            #print(face.shape)
         return [self.model(face.unsqueeze(0)).squeeze() if (face.shape[1] < 48 or face.shape[2] < 48) else face for face in faces]
 
 class ExpressionRecognition:
@@ -132,3 +133,22 @@ class ExpressionRecognition:
             results += score   
         predicted = ExpressionRecognition.prediction_from_score(results)
         return results, predicted
+
+class AudioEmotion:
+    def __init__(self):
+        self.yolov5 = Yolov5SpectrogramEmotion()
+        self.class_names = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprised']
+
+    def get_result(self):
+        result = self.yolov5.evaluate(os.path.join('AudioEmotion', 'spectrogram.jpg'))
+        if len(result.pred[0]) > 0:
+            best = result.pred[0][0]
+            for pred in result.pred[0][1:]:
+                if pred[-2].item() > best[-2].item():
+                    best = pred
+            confidence = best[-2].item()
+            predicted_label = int(best[-1].item())
+        else:
+            confidence = 0
+            predicted_label = -1
+        return predicted_label, confidence
