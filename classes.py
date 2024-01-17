@@ -137,6 +137,18 @@ class ExpressionRecognition:
 class AudioEmotion:
     def __init__(self):
         self.yolov5 = Yolov5SpectrogramEmotion()
+        self.class_names = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprised']
 
     def get_result(self):
-        return self.yolov5.evaluate(os.path.join('AudioEmotion', 'spectrogram.jpg'))
+        result = self.yolov5.evaluate(os.path.join('AudioEmotion', 'spectrogram.jpg'))
+        if len(result.pred[0]) > 0:
+            best = result.pred[0][0]
+            for pred in result.pred[0][1:]:
+                if pred[-2].item() > best[-2].item():
+                    best = pred
+            confidence = best[-2].item()
+            predicted_label = int(best[-1].item())
+        else:
+            confidence = 0
+            predicted_label = -1
+        return predicted_label, confidence

@@ -42,17 +42,23 @@ class Main:
             print(f"Error output:\n{e.output}")  
             return None
 
-    def show_results(self, img_tensor, results, predicted, dets):
+    def show_results(self, img_tensor, results, predicted, dets, audio_predicted_emotion, audio_confidence):
         self.imaging.show_image_boxes(
             img_tensor, dets, 
             "Emotion of the crowd: " + 
-            str(self.expression_recognition.class_names[int(ExpressionRecognition.prediction_from_score(results).numpy())]))
+            str(self.expression_recognition.class_names[int(ExpressionRecognition.prediction_from_score(results).numpy())])
+            + '\n' + "Audio predicted emotion: " + audio_predicted_emotion + " with confidence: " + str(audio_confidence)    
+        )
 
     def main(self):
         while not self.video_provider.finished() and not self.audio_spectrogram_provider.finished():
-            audio_result = self.get_audio_results(self.audio_spectrogram_provider.next_img())
-            print(audio_result)
-            self.show_results(*self.get_facial_results(self.video_provider.next_img()))
+            predicted_label, confidence = self.get_audio_results(self.audio_spectrogram_provider.next_img())
+            if predicted_label == -1:
+                predicted_emotion = 'Unknown'
+            else:
+                predicted_emotion = self.audio_emotion.class_names[predicted_label]
+            confidence = int(confidence * 100) / 100.0
+            self.show_results(*self.get_facial_results(self.video_provider.next_img()), predicted_emotion, confidence)
 
 Main('test_data/DenmarkVsEnglandTrimmed.mp4')
 
