@@ -8,6 +8,7 @@ import pyloudnorm
 import librosa
 import numpy as np
 import matplotlib.pyplot as plt
+import playsound
 
 class DataProvider(ABC):
     @abstractmethod
@@ -82,15 +83,16 @@ class VideoProvider(DataProvider):
 class AudioSpectrogramProvider(DataProvider):
     def __init__(self, video_rel_path, skip_secs=1.0):
         videoclip = VideoFileClip(video_rel_path)
+        self.audio_path = video_rel_path[:-4] + '.wav'
         audioclip = videoclip.audio
-        audioclip.write_audiofile(video_rel_path[:-4] + '.wav')
+        audioclip.write_audiofile(self.audio_path)
         audioclip.close()
         videoclip.close()
-        sample_rate, sample = wavfile.read(video_rel_path[:-4] + '.wav')
+        sample_rate, sample = wavfile.read(self.audio_path)
         if len(sample.shape) == 2: # stereo to mono
             sample = (sample[:, 0] + sample[:, 1]) / 2
         self.sample_rate = sample_rate
-        self.sample = sample
+        self.sample = self.normalize_audio(sample, sample_rate)
         self.skip_frames = int(sample_rate * skip_secs)
         self.current_frame = 0
         self.current_img = None
@@ -119,7 +121,7 @@ class AudioSpectrogramProvider(DataProvider):
         return loudness
 
     def normalize_audio(self, audio, samplerate, new_loudness=-23.0):
-        loudness = audio_loudness(audio, samplerate)
+        loudness = self.audio_loudness(audio, samplerate)
         normalized_audio = pyloudnorm.normalize.loudness(audio, loudness, new_loudness)
         return normalized_audio
 
@@ -135,4 +137,6 @@ class AudioSpectrogramProvider(DataProvider):
         spectrogram_db = librosa.power_to_db(spectrogram, ref=np.max)
         return spectrogram_db
 
+    def play_audio_in_background(self):
+        playsound.playsound(self.audio_path, False)
         
