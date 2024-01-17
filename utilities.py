@@ -20,16 +20,16 @@ class Imaging:
         plt.pause(0.1)
 
 
-    def show_image(self, tensor, title='Plain Image'):
-        plt.clf()
-        
+    def _show_image(self, tensor, title):        
         numpy_img = tensor.permute(1, 2, 0).numpy()  # Change tensor shape to (height, width, channels) for plotting
         
         # Plot the image using matplotlib
         plt.imshow(numpy_img)
         plt.axis('off')  # Hide axis values
         plt.title(title)  # Set title if needed
-        plt.draw()
+
+    def show_image(self, tensor, title='Plain Image'):
+        self.show(self._show_image, tensor, title)
 
     def _show_image_boxes(self, tensor, dets, title):
         numpy_img = tensor.permute(1, 2, 0).numpy()  # Change tensor shape to (height, width, channels) for plotting

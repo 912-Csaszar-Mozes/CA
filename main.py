@@ -44,14 +44,15 @@ class Main:
             return None
 
     def get_body_lang_results(self, to_process):
-        process(to_process)
+        return process(to_process)
 
-    def show_results(self, img_tensor, results, predicted, dets, audio_predicted_emotion, audio_confidence):
+    def show_results(self, img_tensor, results, predicted, dets, audio_predicted_emotion, audio_confidence, body_lang_emotion, body_lang_count):
         self.imaging.show_image_boxes(
             img_tensor, dets, 
-            "Emotion of the crowd: " + 
-            str(self.expression_recognition.class_names[int(ExpressionRecognition.prediction_from_score(results).numpy())])
-            + '\n' + "Audio predicted emotion: " + audio_predicted_emotion + " with confidence: " + str(audio_confidence)    
+            "Expression predicted emotion: "
+            + str(self.expression_recognition.class_names[int(ExpressionRecognition.prediction_from_score(results).numpy())])
+            + '\nBody language predicted emotion: ' + body_lang_emotion + " number of people: " + str(body_lang_count)
+            + '\nAudio predicted emotion: ' + audio_predicted_emotion + " with confidence: " + str(audio_confidence)  
         )
 
     def main(self):
@@ -63,8 +64,11 @@ class Main:
             else:
                 predicted_emotion = self.audio_emotion.class_names[predicted_label]
             confidence = int(confidence * 100) / 100.0
-            self.show_results(*self.get_facial_results(self.video_provider.next_img()), predicted_emotion, confidence)
-            self.get_body_lang_results(self.video_provider.next_img())
+            img = self.video_provider.next_img()
+            body_lang_results = self.get_body_lang_results(img)
+            body_lang_results = sorted(body_lang_results, key=lambda x: x[1], reverse=True)
+            self.show_results(*self.get_facial_results(img), "Unknown", 0.2, body_lang_results[0][0], body_lang_results[0][1])
+            
             if sound_plays == False:
                 self.audio_spectrogram_provider.play_audio_in_background()
                 sound_plays = True

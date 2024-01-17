@@ -5,3 +5,4 @@ __pycache__/
 *.pt
 .idea/
 venv/
+data_to_test_on

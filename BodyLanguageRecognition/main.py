@@ -75,6 +75,8 @@ def process(image):
         count = predictions.tolist().count(list(value))
         print(f"Value: {value[0]}, Count: {count}")
 
+    return [(value[0], predictions.tolist().count(list(value))) for value in unique_values]
+
 # movies = os.path.join(script_directory, 'BoLD_dataset_sample\\')
 #
 # group = "0163.mp4"
