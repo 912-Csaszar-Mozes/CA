@@ -67,7 +67,7 @@ class Main:
             img = self.video_provider.next_img()
             body_lang_results = self.get_body_lang_results(img)
             body_lang_results = sorted(body_lang_results, key=lambda x: x[1], reverse=True)
-            self.show_results(*self.get_facial_results(img), "Unknown", 0.2, body_lang_results[0][0], body_lang_results[0][1])
+            self.show_results(*self.get_facial_results(img), predicted_emotion, confidence, body_lang_results[0][0], body_lang_results[0][1])
             
             if sound_plays == False:
                 self.audio_spectrogram_provider.play_audio_in_background()
